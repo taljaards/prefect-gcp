@@ -125,8 +125,7 @@ class TestGcsBucket:
         )
 
     def test_bucket_folder_suffix(self, gcs_bucket):
-        bucket_folder = gcs_bucket.bucket_folder
-        if bucket_folder:
+        if bucket_folder := gcs_bucket.bucket_folder:
             assert bucket_folder.endswith("/")
         else:
             assert bucket_folder == ""

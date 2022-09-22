@@ -206,8 +206,7 @@ class GcpCredentials(Block):
 
         # override class project if method project is provided
         project = project or self.project
-        storage_client = StorageClient(credentials=credentials, project=project)
-        return storage_client
+        return StorageClient(credentials=credentials, project=project)
 
     @_raise_help_msg("bigquery")
     def get_bigquery_client(
@@ -267,10 +266,9 @@ class GcpCredentials(Block):
 
         # override class project if method project is provided
         project = project or self.project
-        big_query_client = BigQueryClient(
+        return BigQueryClient(
             credentials=credentials, project=project, location=location
         )
-        return big_query_client
 
     @_raise_help_msg("secret_manager")
     def get_secret_manager_client(self) -> "SecretManagerServiceClient":
@@ -320,6 +318,4 @@ class GcpCredentials(Block):
         """
         credentials = self.get_credentials_from_service_account()
 
-        # doesn't accept project; must pass in project in tasks
-        secret_manager_client = SecretManagerServiceClient(credentials=credentials)
-        return secret_manager_client
+        return SecretManagerServiceClient(credentials=credentials)

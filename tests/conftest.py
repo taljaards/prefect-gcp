@@ -91,8 +91,7 @@ class BigQueryClient:
         return MagicMock()
 
     def get_dataset(self, dataset):
-        dataset_obj = MagicMock(table=MagicMock())
-        return dataset_obj
+        return MagicMock(table=MagicMock())
 
     def create_dataset(self, dataset):
         return self.get_dataset(dataset)

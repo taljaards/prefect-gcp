@@ -71,12 +71,10 @@ class Job(BaseModel):
         Check if Job status is not ready because
         the specified container cannot be found.
         """
-        if (
+        return (
             self.ready_condition.get("status") == "False"
             and self.ready_condition.get("reason") == "ContainerMissing"
-        ):
-            return True
-        return False
+        )
 
     def is_ready(self) -> bool:
         """Whether a job is finished registering and ready to be executed"""
@@ -128,22 +126,19 @@ class Job(BaseModel):
     def create(client: Resource, namespace: str, body: dict):
         """Make a create request to the GCP jobs API."""
         request = client.jobs().create(parent=f"namespaces/{namespace}", body=body)
-        response = request.execute()
-        return response
+        return request.execute()
 
     @staticmethod
     def delete(client: Resource, namespace: str, job_name: str):
         """Make a delete request to the GCP jobs API."""
         request = client.jobs().delete(name=f"namespaces/{namespace}/jobs/{job_name}")
-        response = request.execute()
-        return response
+        return request.execute()
 
     @staticmethod
     def run(client: Resource, namespace: str, job_name: str):
         """Make a run request to the GCP jobs API."""
         request = client.jobs().run(name=f"namespaces/{namespace}/jobs/{job_name}")
-        response = request.execute()
-        return response
+        return request.execute()
 
 
 class Execution(BaseModel):
@@ -172,10 +167,7 @@ class Execution(BaseModel):
     def succeeded(self):
         """Whether or not the Execution completed is a successful state."""
         completed_condition = self.condition_after_completion()
-        if completed_condition and completed_condition["status"] == "True":
-            return True
-
-        return False
+        return bool(completed_condition and completed_condition["status"] == "True")
 
     @classmethod
     def get(cls, client: Resource, namespace: str, execution_name: str):
@@ -324,7 +316,7 @@ class CloudRunJob(Infrastructure):
         See: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
         See also: https://cloud.google.com/run/docs/configuring/cpu#setting-jobs
         """  # noqa
-        return str(value * 1000) + "m"
+        return f"{str(value * 1000)}m"
 
     @root_validator
     def _check_valid_memory(cls, values):
@@ -530,7 +522,7 @@ class CloudRunJob(Infrastructure):
         # env and command here
         containers = [self._add_container_settings({"image": self.image})]
 
-        body = {
+        return {
             "apiVersion": "run.googleapis.com/v1",
             "kind": "Job",
             "metadata": jobs_metadata,
@@ -544,7 +536,6 @@ class CloudRunJob(Infrastructure):
                 }
             },
         }
-        return body
 
     def preview(self) -> str:
         """Generate a preview of the job definition that will be sent to GCP."""
@@ -594,11 +585,7 @@ class CloudRunJob(Infrastructure):
 
         t0 = time.time()
         while not job.is_ready():
-            ready_condition = (
-                job.ready_condition
-                if job.ready_condition
-                else "waiting for condition update"
-            )
+            ready_condition = job.ready_condition or "waiting for condition update"
             self.logger.info(
                 f"Job is not yet ready... Current condition: {ready_condition}"
             )
@@ -638,7 +625,7 @@ class CloudRunJob(Infrastructure):
         and https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
         """  # noqa
         container_settings = base_settings.copy()
-        container_settings.update(self._add_env())
+        container_settings |= self._add_env()
         container_settings.update(self._add_resources())
         container_settings.update(self._add_command())
         container_settings.update(self._add_args())
