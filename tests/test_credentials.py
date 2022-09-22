@@ -25,14 +25,12 @@ SERVICE_ACCOUNT_FILES.append(os.path.expanduser(_get_first_file_in_root()))
 
 @pytest.fixture()
 def service_account_info_dict():
-    _service_account_info = {"key": "abc", "pass": "pass"}
-    return _service_account_info
+    return {"key": "abc", "pass": "pass"}
 
 
 @pytest.fixture()
 def service_account_info_json(service_account_info_dict):
-    _service_account_info = json.dumps(service_account_info_dict)
-    return _service_account_info
+    return json.dumps(service_account_info_dict)
 
 
 @pytest.fixture(params=["service_account_info_dict", "service_account_info_json"])
@@ -132,12 +130,11 @@ class MockCliProfile(Block):
     target_configs: MockTargetConfigs
 
     def get_profile(self):
-        profile = {
+        return {
             "name": {
                 "outputs": {"target": self.target_configs.get_configs()},
             },
         }
-        return profile
 
 
 def test_credentials_is_able_to_serialize_back(service_account_info):

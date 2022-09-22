@@ -148,10 +148,7 @@ async def bigquery_query(
         job_config=job_config,
     )
     result = await to_thread.run_sync(partial_query)
-    if to_dataframe:
-        return result.to_dataframe()
-    else:
-        return list(result)
+    return result.to_dataframe() if to_dataframe else list(result)
 
 
 @task

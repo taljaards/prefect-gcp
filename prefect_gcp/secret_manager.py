@@ -167,8 +167,7 @@ async def read_secret(
     name = f"projects/{project}/secrets/{secret_name}/versions/{version_id}"
     partial_access = partial(client.access_secret_version, name=name, timeout=timeout)
     response = await to_thread.run_sync(partial_access)
-    secret = response.payload.data.decode("UTF-8")
-    return secret
+    return response.payload.data.decode("UTF-8")
 
 
 @task

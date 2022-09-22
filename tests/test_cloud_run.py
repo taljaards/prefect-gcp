@@ -73,9 +73,7 @@ class MockExecution(Mock):
     def is_running(self):
         MockExecution.call_count += 1
 
-        if self.call_count > 2:
-            return False
-        return True
+        return self.call_count <= 2
 
     def condition_after_completion(self):
         return {"message": "test"}
@@ -89,18 +87,13 @@ class MockExecution(Mock):
 
 
 def list_mock_calls(mock_client, assigned_calls=0):
-    calls = []
-    for call in mock_client.mock_calls:
-        # mock `call.jobs().get()` results in two calls: `call.jobs()` and
-        # `call.jobs().get()`, so we want to remove the first, smaller
-        # call.
-        if len(str(call).split(".")) > 2:
-            calls.append(str(call))
-    # assigning a return value to a call results in initial
-    # mock calls which are not actually made
-    actual_calls = calls[assigned_calls:]
+    calls = [
+        str(call)
+        for call in mock_client.mock_calls
+        if len(str(call).split(".")) > 2
+    ]
 
-    return actual_calls
+    return calls[assigned_calls:]
 
 
 class TestJob:
